@@ -19,7 +19,8 @@
 #define THRESHOLD1 650
 #define THRESHOLD2 700
 #define THRESHOLD3 800
-#define KEDALAMAN_SUNGAI 1000
+#define KEDALAMAN_SUNGAI 15
+#define LUAS_PENAMPANG_SUNGAI 34
 
 // Varaible for Flowmeter
 long currentMillis = 0;
@@ -34,8 +35,8 @@ unsigned int flowMilliLitres;
 unsigned long totalMilliLitres;
 
 // Variable for WiFi
-const char* ssid     = "UGTECHNOPARK"; // Deklarasi variabel ssid dan password
-const char* password = "c0b4d1b4c4";     // Sebelum pemanggilan Blynk.begin()
+const char* ssid     = "Pondok Sebelah"; // Deklarasi variabel ssid dan password
+const char* password = "*N68J./4yszkZ(Zh";     // Sebelum pemanggilan Blynk.begin()
 
 void setup() {
   Serial.begin(115200);
@@ -76,11 +77,18 @@ void ultrasonic()
   digitalWrite(ULTRA_TRIG, LOW);
 
   float jarak = pulseIn(ULTRA_ECHO, HIGH);
-  float jarak_value = jarak * 0.017 * 10;
+  float jarak_value = jarak * 0.017 / 10;
   float ketinggian_air = KEDALAMAN_SUNGAI - jarak_value;
-  Serial.print("Ketinggian Air: ");
+
+  Serial.print("Jarak Air: ");
   Serial.print(jarak_value);
-  Serial.println(" cm");
+  Serial.println(" m");
+
+  Serial.print("Ketinggian Air: ");
+  Serial.print(ketinggian_air);
+  Serial.println(" m");
+
+  Serial.println("=================================");
 
   Blynk.virtualWrite(V0, ketinggian_air);
 }
@@ -113,15 +121,23 @@ void flowmeter()
 
     flowRate = ((1000.0 / (millis() - previousMillis)) * pulse1Sec) / calibrationFactor;
 
-    float kecepatan_arus = flowRate * 100000 / 60;
+    float kecepatan_arus = flowRate * 10000 / 60;
+
+    float debit_air = LUAS_PENAMPANG_SUNGAI * kecepatan_arus / 60;
     
     // Print the flow rate for this second in litres / minute
     Serial.print("Flow rate: ");
     Serial.print(kecepatan_arus);  // Print the integer part of the variable
-    Serial.print("mL/min");
-    Serial.print("\t");
+    Serial.println(" m/min");
+
+    Serial.print("Debit Air: ");
+    Serial.print(debit_air);  // Print the integer part of the variable
+    Serial.println(" L/sec");
+
+    Serial.println("=================================");
 
     Blynk.virtualWrite(V1, kecepatan_arus);
+    Blynk.virtualWrite(V2, debit_air);
   }
 }
 
